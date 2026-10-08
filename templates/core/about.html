@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}About Us | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">About Our Clinic</span>
+        <h1>Dedicated To Clinical Precision & Aesthetics</h1>
+        <p class="section-subtitle mb-0">Bridging medical dermatology, trichology, and compassionate aesthetic artistry.</p>
+    </div>
+</div>
+
+<!-- Mission & Story -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="section-tag">Our Foundation</span>
+                <h2 class="section-title">A Medical Sanctuary For Skin & Hair Health</h2>
+                <div class="text-muted" style="line-height: 1.8;">
+                    {% if site_config.about_full %}
+                    {{ site_config.about_full|linebreaks }}
+                    {% else %}
+                    <p>
+                        Founded with a steadfast commitment to medical integrity and clinical transparency, {{ CLINIC_NAME }} provides evidence-based therapies for chronic skin conditions, hair thinning, and non-surgical facial aesthetics.
+                    </p>
+                    <p>
+                        We reject one-size-fits-all beauty fads. Every protocol in our clinic is personalized using advanced diagnostic equipment to evaluate dermal layers, cellular hydration, and follicle viability.
+                    </p>
+                    <p>
+                        Our mission is to help every patient achieve healthy, vibrant, and natural-looking results in a discreet, welcoming, and medically supervised environment.
+                    </p>
+                    {% endif %}
+                </div>
+
+                <div class="row g-4 mt-2">
+                    <div class="col-6">
+                        <div class="border-start border-3 border-primary ps-3">
+                            <h3 class="fw-bold mb-0 text-primary">{{ doctor_count }}+</h3>
+                            <small class="text-muted">Board-Certified Specialists</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border-start border-3 border-primary ps-3">
+                            <h3 class="fw-bold mb-0 text-primary">{{ treatment_count }}+</h3>
+                            <small class="text-muted">Evidence-Based Procedures</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image-wrapper">
+                    <img src="{{ site_config.about_image|fallback_img:'about' }}" alt="{{ CLINIC_NAME }} Facility">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Values -->
+<section class="section-padding bg-white border-top border-bottom border-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag">Our Philosophy</span>
+            <h2 class="section-title">The Four Pillars Of Our Practice</h2>
+            <p class="section-subtitle">Guiding every clinical diagnosis, laser therapy, and patient consultation.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="clinic-card p-4 text-center">
+                    <div class="mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Patient Safety First</h5>
+                    <p class="text-muted small mb-0">US-FDA certified laser hardware, medical-grade sanitization, and strict adherence to international dermatological protocols.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="clinic-card p-4 text-center">
+                    <div class="mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="bi bi-person-heart"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Doctor-Led Consultations</h5>
+                    <p class="text-muted small mb-0">Direct assessments conducted solely by accredited dermatologists and surgeons, never delegated to commercial sales reps.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="clinic-card p-4 text-center">
+                    <div class="mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Customized Treatment Plans</h5>
+                    <p class="text-muted small mb-0">Therapies tailored precisely to your skin phototype, medical history, lifestyle requirements, and aesthetic goals.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="clinic-card p-4 text-center">
+                    <div class="mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="bi bi-gem"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Natural Aesthetics</h5>
+                    <p class="text-muted small mb-0">We focus on subtle, age-appropriate rejuvenation that restores harmony and glow without looking overdone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Medical Leadership -->
+{% if doctors %}
+<section class="section-padding">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag">Our Specialists</span>
+            <h2 class="section-title">The Doctors Behind Your Care</h2>
+            <p class="section-subtitle">Dedicated medical professionals holding fellowships and international accreditations.</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            {% for doc in doctors %}
+            <div class="col-lg-4 col-md-6">
+                <div class="doctor-card">
+                    <div class="doctor-img-box" style="height: 320px;">
+                        <img src="{{ doc.photo|fallback_img:'doctor' }}" alt="Dr. {{ doc.name }}">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h5 class="fw-bold mb-1">Dr. {{ doc.name }}</h5>
+                        <div class="text-primary small fw-semibold mb-2">{{ doc.designation }}</div>
+                        <p class="text-muted small mb-3">{{ doc.qualifications }}</p>
+                        <p class="text-muted small mb-3">{{ doc.bio|truncatewords:20 }}</p>
+                        <a href="{% url 'doctors:doctor_detail' doc.slug %}" class="btn btn-outline-primary btn-sm">
+                            View Full Credentials
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="section-padding bg-white border-top border-light text-center">
+    <div class="container">
+        <h2 class="section-title">Experience The Aura Difference</h2>
+        <p class="section-subtitle">Schedule your initial skin or scalp diagnosis with our dermatologists.</p>
+        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-calendar2-check"></i> Book Your Consultation
+        </a>
+    </div>
+</section>
+{% endblock %}

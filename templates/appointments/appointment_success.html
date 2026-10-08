@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}Appointment Booking Received | {{ CLINIC_NAME }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <!-- Success Checkmark Icon -->
+                <div class="mx-auto mb-4" style="width: 88px; height: 88px; border-radius: 50%; background: #D1FAE5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: 0 8px 24px rgba(5, 150, 105, 0.2);">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+
+                <span class="section-tag section-tag-gold mb-2">Request Successfully Submitted</span>
+                <h1 class="display-6 fw-bold mb-3 text-dark">We Look Forward to Welcoming You!</h1>
+                <p class="text-muted fs-6 mb-5">
+                    Your appointment request has been safely recorded in our clinical scheduling database. Our concierge team will review specialist availability and contact you shortly.
+                </p>
+
+                {% if appointment %}
+                <!-- Appointment Overview Card -->
+                <div class="clinic-card p-4 p-lg-5 text-start mb-4 shadow-sm bg-white border-0">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4 gap-2">
+                        <div>
+                            <span class="text-muted small text-uppercase tracking-wider d-block">Booking Reference</span>
+                            <strong class="fs-4 text-primary font-monospace">#APT-{{ appointment.id|stringformat:"04d" }}</strong>
+                        </div>
+                        <div>
+                            {% if appointment.status == 'confirmed' %}
+                            <span class="badge bg-success text-white px-3 py-2 rounded-pill font-monospace fs-6">
+                                ● Status: Confirmed
+                            </span>
+                            {% elif appointment.status == 'completed' %}
+                            <span class="badge bg-info text-white px-3 py-2 rounded-pill font-monospace fs-6">
+                                ● Status: Completed
+                            </span>
+                            {% elif appointment.status == 'cancelled' %}
+                            <span class="badge bg-danger text-white px-3 py-2 rounded-pill font-monospace fs-6">
+                                ● Status: Cancelled
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill font-monospace fs-6">
+                                ● Status: Pending Verification
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block mb-1">Patient Name</small>
+                            <span class="fw-bold text-dark fs-5">{{ appointment.patient_name }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block mb-1">Contact Details</small>
+                            <div class="text-dark fw-semibold"><i class="bi bi-telephone text-primary me-1"></i> {{ appointment.patient_phone }}</div>
+                            <small class="text-muted"><i class="bi bi-envelope text-primary me-1"></i> {{ appointment.patient_email }}</small>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block mb-1">Consultation Date & Time</small>
+                            <strong class="text-primary fs-6 d-block"><i class="bi bi-calendar-event me-1"></i> {{ appointment.preferred_date|date:"l, F d, Y" }}</strong>
+                            <div class="text-secondary small fw-semibold mt-1"><i class="bi bi-clock me-1"></i> Slot: {{ appointment.get_preferred_time_display }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block mb-1">Selected Treatment</small>
+                            <strong class="text-dark d-block fs-6">
+                                {% if appointment.treatment %}{{ appointment.treatment.name }}{% else %}General Clinical Consultation{% endif %}
+                            </strong>
+                            {% if appointment.doctor %}
+                            <small class="text-primary fw-medium"><i class="bi bi-person me-1"></i> Specialist: Dr. {{ appointment.doctor.name }}</small>
+                            {% else %}
+                            <small class="text-muted"><i class="bi bi-hospital me-1"></i> Assigned Clinical Specialist</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if appointment.message %}
+                    <div class="bg-light p-3 rounded-3 small text-muted border">
+                        <strong class="text-dark">Patient Notes / Concern:</strong>
+                        <p class="mb-0 mt-1 italic">"{{ appointment.message }}"</p>
+                    </div>
+                    {% endif %}
+
+                    {% if whatsapp_url %}
+                    <!-- Instant WhatsApp Confirmation CTA -->
+                    <div class="mt-4 pt-4 border-top text-center">
+                        <p class="small text-muted mb-3">Want an instant priority response? Send this booking request directly to our clinical WhatsApp concierge:</p>
+                        <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-success btn-lg px-4 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-whatsapp fs-5"></i> Confirm via WhatsApp
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Next Steps Guidance Card -->
+                <div class="clinic-card p-4 bg-white shadow-sm border-0 mb-5 text-start">
+                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-primary"></i> What Happens Next?
+                    </h6>
+                    <ol class="small text-muted mb-0 ps-3" style="line-height: 1.8;">
+                        <li class="mb-2"><strong>Slot Verification:</strong> Our clinical front desk reviews specialist availability for your preferred date and time slot.</li>
+                        <li class="mb-2"><strong>Confirmation Call / WhatsApp:</strong> You will receive a direct WhatsApp message and phone confirmation from our clinic concierge within 2 to 4 business hours.</li>
+                        <li class="mb-2"><strong>Zero Advance Payment:</strong> Consultation fees and procedure costs are settled directly at the clinic reception following your examination.</li>
+                        <li><strong>Need to Reschedule?</strong> Simply reply to our WhatsApp confirmation message or call our reception team.</li>
+                    </ol>
+                </div>
+
+                <!-- Navigation CTAs -->
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{% url 'core:home' %}" class="btn btn-outline-primary px-4 py-2">
+                        <i class="bi bi-house-door me-1"></i> Return to Homepage
+                    </a>
+                    <a href="{% url 'treatments:treatment_list' %}" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-compass me-1"></i> Explore Treatments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}Treatments & Procedures | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Clinical Services</span>
+        <h1>Medical & Aesthetic Treatments</h1>
+        <p class="section-subtitle mb-0">Evidence-based dermatological care, US-FDA approved laser therapies, and hair restoration.</p>
+    </div>
+</div>
+
+<section class="section-padding">
+    <div class="container">
+        <!-- Search and Filter Bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-6">
+                <form method="get" action="{% url 'treatments:treatment_list' %}" class="d-flex gap-2">
+                    {% if selected_category %}
+                    <input type="hidden" name="category" value="{{ selected_category.slug }}">
+                    {% endif %}
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" value="{{ query }}" class="form-control border-start-0" placeholder="Search treatments (e.g. HydraFacial, PRP, Acne, Laser)...">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Category Nav Pills -->
+        <div class="filter-pills-nav">
+            <a href="{% url 'treatments:treatment_list' %}" class="filter-pill {% if not selected_category %}active{% endif %}">
+                All Treatments
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'treatments:treatment_list' %}?category={{ cat.slug }}" class="filter-pill {% if selected_category.slug == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Treatments Grid -->
+        <div class="row g-4">
+            {% for treatment in treatments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper">
+                        <img src="{{ treatment.image|fallback_img:'treatment' }}" alt="{{ treatment.name }}">
+                        <span class="card-badge">{{ treatment.category.name }}</span>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="card-meta">
+                            {% if treatment.duration %}
+                            <span><i class="bi bi-clock me-1"></i>{{ treatment.duration }}</span>
+                            {% endif %}
+                            {% if treatment.price_range %}
+                            <span><i class="bi bi-tag me-1"></i>{{ treatment.price_range }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold mb-2">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="text-dark">
+                                {{ treatment.name }}
+                            </a>
+                        </h5>
+
+                        <p class="text-muted small mb-3 flex-grow-1">
+                            {{ treatment.short_description|truncatewords:18 }}
+                        </p>
+
+                        <!-- Key Benefits snippet -->
+                        {% if treatment.benefits %}
+                        <ul class="list-unstyled small text-muted mb-4 border-top pt-2">
+                            {% for b in treatment.benefits|split_lines|slice:":2" %}
+                            <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> {{ b }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
+                                Learn More
+                            </a>
+                            <a href="{% url 'appointments:book_appointment' %}?treatment={{ treatment.slug }}" class="btn btn-primary btn-sm flex-fill">
+                                Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No treatments found matching your criteria.</p>
+                <a href="{% url 'treatments:treatment_list' %}" class="btn btn-outline-primary">View All Treatments</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Bottom CTA -->
+<section class="section-padding bg-white border-top border-light text-center">
+    <div class="container">
+        <h2 class="section-title">Not Sure Which Treatment Is Right For You?</h2>
+        <p class="section-subtitle">Our dermatologists perform in-depth skin and scalp mapping to prescribe the ideal clinical protocol.</p>
+        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-calendar2-check"></i> Schedule A Diagnostic Consultation
+        </a>
+    </div>
+</section>
+{% endblock %}

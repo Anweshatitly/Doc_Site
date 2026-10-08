@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}Before & After Transformations | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Clinical Proof</span>
+        <h1>Real Patient Transformations</h1>
+        <p class="section-subtitle mb-0">Documented before-and-after outcomes across clinical dermatology, laser therapy, and hair restoration.</p>
+    </div>
+</div>
+
+<section class="section-padding">
+    <div class="container">
+        <!-- Category Filter Pills -->
+        {% if treatment_categories %}
+        <div class="filter-pills-nav">
+            <a href="{% url 'gallery:before_after' %}" class="filter-pill {% if not selected_cat %}active{% endif %}">
+                All Cases
+            </a>
+            {% for cat in treatment_categories %}
+            <a href="{% url 'gallery:before_after' %}?category={{ cat.slug }}" class="filter-pill {% if selected_cat.slug == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Comparison Cards Grid -->
+        <div class="row g-4">
+            {% for case in cases %}
+            <div class="col-lg-4 col-md-6">
+                <div class="ba-comparison-card">
+                    <div class="ba-images-row">
+                        <div class="ba-img-half">
+                            <img src="{{ case.before_image|fallback_img:'before' }}" alt="Before {{ case.title|default:case.treatment.name }}">
+                            <span class="ba-tag">Before</span>
+                        </div>
+                        <div class="ba-img-half">
+                            <img src="{{ case.after_image|fallback_img:'after' }}" alt="After {{ case.title|default:case.treatment.name }}">
+                            <span class="ba-tag ba-tag-after">After</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <span class="badge bg-light text-primary align-self-start mb-2">{{ case.treatment.name }}</span>
+                        <h5 class="fw-bold mb-1">{{ case.title|default:case.treatment.name }}</h5>
+
+                        <div class="text-muted small mb-3">
+                            {% if case.sessions_completed %}
+                            <span><i class="bi bi-clock-history me-1"></i>{{ case.sessions_completed }}</span>
+                            {% endif %}
+                            {% if case.patient_gender or case.patient_age %}
+                            <span class="ms-2">· {{ case.get_patient_gender_display|default:"" }} {% if case.patient_age %}({{ case.patient_age }} yrs){% endif %}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if case.description %}
+                        <p class="text-muted small mb-3 flex-grow-1">{{ case.description }}</p>
+                        {% endif %}
+
+                        <div class="d-flex gap-2 mt-auto pt-2 border-top">
+                            <a href="{% url 'treatments:treatment_detail' case.treatment.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
+                                View Treatment
+                            </a>
+                            <a href="{% url 'appointments:book_appointment' %}?treatment={{ case.treatment.slug }}" class="btn btn-primary btn-sm flex-fill">
+                                Book Consultation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No before-and-after cases currently listed in this category.</p>
+                <a href="{% url 'gallery:before_after' %}" class="btn btn-outline-primary">View All Case Studies</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Disclaimer -->
+<div class="container pb-5 text-center text-muted small">
+    <p class="mb-0">
+        <em>* Disclaimer: Clinical outcomes may vary between individuals based on physiology, skin phototype, age, lifestyle, and adherence to prescribed post-care routines. Photos are published with verified patient consent.</em>
+    </p>
+</div>
+{% endblock %}

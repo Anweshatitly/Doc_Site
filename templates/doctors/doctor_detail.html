@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if doctor.meta_title %}{{ doctor.meta_title }}{% else %}Dr. {{ doctor.name }} | {{ doctor.designation }} | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block meta_description %}{% if doctor.meta_description %}{{ doctor.meta_description }}{% elif doctor.bio %}{{ doctor.bio|striptags|truncatewords:25 }}{% else %}Consult with Dr. {{ doctor.name }}, specialist in {{ doctor.designation }} at {{ CLINIC_NAME }}. {{ doctor.experience_years }}+ years experience.{% endif %}{% endblock %}
+
+{% block og_type %}profile{% endblock %}
+{% block og_title %}{% if doctor.meta_title %}{{ doctor.meta_title }}{% else %}Dr. {{ doctor.name }} — {{ doctor.designation }} | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+{% block og_description %}{% if doctor.meta_description %}{{ doctor.meta_description }}{% elif doctor.bio %}{{ doctor.bio|striptags|truncatewords:30 }}{% else %}Meet Dr. {{ doctor.name }} at {{ CLINIC_NAME }}. Book a specialized consultation today.{% endif %}{% endblock %}
+{% block og_image %}{% if doctor.photo %}{{ request.scheme }}://{{ request.get_host }}{{ doctor.photo.url }}{% endif %}{% endblock %}
+{% block twitter_title %}{% if doctor.meta_title %}{{ doctor.meta_title }}{% else %}Dr. {{ doctor.name }} | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+{% block twitter_description %}{% if doctor.meta_description %}{{ doctor.meta_description }}{% elif doctor.bio %}{{ doctor.bio|striptags|truncatewords:25 }}{% else %}Book a consultation with Dr. {{ doctor.name }} at {{ CLINIC_NAME }}.{% endif %}{% endblock %}
+{% block twitter_image %}{% if doctor.photo %}{{ request.scheme }}://{{ request.get_host }}{{ doctor.photo.url }}{% endif %}{% endblock %}
+
+{% block extra_schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Physician",
+  "name": "Dr. {{ doctor.name|escapejs }}",
+  "jobTitle": "{{ doctor.designation|escapejs }}",
+  "description": "{{ doctor.bio|striptags|truncatewords:40|escapejs }}",
+  {% if doctor.photo %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ doctor.photo.url }}",{% endif %}
+  "medicalSpecialty": "{{ doctor.designation|escapejs }}",
+  "priceRange": "{{ doctor.consultation_fee|default:'₹800'|escapejs }}",
+  "worksFor": {
+    "@type": "MedicalBusiness",
+    "name": "{{ CLINIC_NAME|escapejs }}",
+    "telephone": "{{ CLINIC_PHONE|escapejs }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Doctor Profile Header -->
+<section class="section-padding pb-4">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'doctors:doctor_list' %}">Specialists</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Dr. {{ doctor.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="clinic-card p-4 p-lg-5">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-4 text-center">
+                    <div class="hero-image-wrapper mx-auto" style="max-width: 320px; height: 380px; border-radius: var(--radius-md);">
+                        <img src="{{ doctor.photo|fallback_img:'doctor' }}" alt="Dr. {{ doctor.name }}" style="height: 100%; width: 100%; object-fit: cover; object-position: top center;">
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <span class="section-tag">{{ doctor.experience_years }}+ Years Clinical Experience</span>
+                    <h1 class="display-6 fw-bold mb-2">Dr. {{ doctor.name }}</h1>
+                    <div class="text-primary fs-5 fw-semibold mb-3">{{ doctor.designation }}</div>
+                    <p class="text-muted mb-4 fs-6">{{ doctor.qualifications }}</p>
+
+                    <div class="row g-3 p-3 bg-light rounded-3 mb-4">
+                        {% if doctor.consultation_fee %}
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Consultation Fee</small>
+                            <span class="fs-5 fw-bold text-success">{{ doctor.consultation_fee }}</span>
+                        </div>
+                        {% endif %}
+                        {% if doctor.available_days %}
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Clinic Availability</small>
+                            <span class="fw-semibold text-dark">{{ doctor.available_days }}</span>
+                            {% if doctor.available_time %}
+                            <small class="d-block text-secondary">({{ doctor.available_time }})</small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'appointments:book_appointment' %}?doctor={{ doctor.slug }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-calendar-check"></i> Book Consultation With Dr. {{ doctor.name }}
+                        </a>
+                        {% if doctor.phone %}
+                        <a href="tel:{{ doctor.phone }}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-telephone"></i> Call Direct
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Biography & Clinical Focus -->
+<section class="section-padding pt-0">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <!-- Biography -->
+                <div class="mb-5">
+                    <h3 class="fw-bold mb-3">About Dr. {{ doctor.name }}</h3>
+                    <div class="text-muted" style="line-height: 1.8;">
+                        {% if doctor.bio %}
+                        {{ doctor.bio|linebreaks }}
+                        {% else %}
+                        <p>Dr. {{ doctor.name }} is a dedicated medical specialist at {{ CLINIC_NAME }} committed to providing patient-centered, evidence-based dermatological care.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Performed Treatments -->
+                {% if treatments %}
+                <div class="mb-5">
+                    <h3 class="fw-bold mb-3">Specialized Treatments & Procedures</h3>
+                    <p class="text-muted small mb-4">Procedures directly administered and supervised by Dr. {{ doctor.name }}:</p>
+                    <div class="row g-3">
+                        {% for treat in treatments %}
+                        <div class="col-md-6">
+                            <div class="clinic-card p-3 d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h6 class="fw-bold mb-1">
+                                        <a href="{% url 'treatments:treatment_detail' treat.slug %}" class="text-dark">
+                                            {{ treat.name }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ treat.category.name }}</small>
+                                </div>
+                                <a href="{% url 'appointments:book_appointment' %}?doctor={{ doctor.slug }}&treatment={{ treat.slug }}" class="btn btn-sm btn-outline-primary">
+                                    Book
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Patient Reviews -->
+                {% if testimonials %}
+                <div>
+                    <h3 class="fw-bold mb-3">Patient Feedback for Dr. {{ doctor.name }}</h3>
+                    <div class="row g-4">
+                        {% for t in testimonials %}
+                        <div class="col-md-6">
+                            <div class="testimonial-card">
+                                <div>
+                                    <div class="testimonial-stars">
+                                        {% for i in "12345" %}
+                                        {% if forloop.counter <= t.rating %}★{% else %}☆{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <p class="testimonial-quote">"{{ t.content }}"</p>
+                                </div>
+                                <div class="testimonial-patient border-top pt-3">
+                                    <img src="{{ t.photo|fallback_img:'patient' }}" alt="{{ t.name }}" class="patient-avatar">
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-dark">{{ t.name }}</h6>
+                                        <small class="text-muted">{{ t.location|default:"Verified Patient" }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="clinic-card p-4 sticky-top" style="top: 100px;">
+                    <h5 class="fw-bold mb-3">Appointment Hours</h5>
+                    <ul class="list-unstyled small text-muted mb-4">
+                        <li class="mb-2 d-flex justify-content-between">
+                            <span>Available Days:</span>
+                            <strong class="text-dark">{{ doctor.available_days|default:"Mon - Fri" }}</strong>
+                        </li>
+                        <li class="mb-2 d-flex justify-content-between">
+                            <span>Consulting Hours:</span>
+                            <strong class="text-dark">{{ doctor.available_time|default:"10:00 AM - 4:00 PM" }}</strong>
+                        </li>
+                        <li class="mb-2 d-flex justify-content-between">
+                            <span>Consultation Fee:</span>
+                            <strong class="text-success">{{ doctor.consultation_fee|default:"₹800" }}</strong>
+                        </li>
+                    </ul>
+                    <a href="{% url 'appointments:book_appointment' %}?doctor={{ doctor.slug }}" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-calendar-check"></i> Book Consultation
+                    </a>
+                    {% if site_config.whatsapp_number %}
+                    <a href="https://wa.me/{{ site_config.whatsapp_number }}?text=Hello%20Clinic,%20I%20would%20like%20to%20book%20an%20appointment%20with%20Dr.%20{{ doctor.name|urlencode }}" target="_blank" class="btn btn-outline-success w-100">
+                        <i class="bi bi-whatsapp"></i> Inquire via WhatsApp
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

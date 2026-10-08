@@ -1,0 +1,237 @@
+<!-- WhatsApp Appointment Booking Modal -->
+<div class="modal fade" id="whatsappBookingModal" tabindex="-1" aria-labelledby="whatsappBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <!-- Modal Header -->
+            <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="bi bi-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="whatsappBookingModalLabel">Book via WhatsApp</h5>
+                        <small style="opacity: 0.95; font-size: 13px;">Direct Clinical Scheduling Desk</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body p-4 bg-light">
+                <p class="text-muted small mb-3">
+                    Fill in your appointment details below. Clicking <strong>Book via WhatsApp</strong> will generate a formatted booking request and open WhatsApp directly with our clinical concierge.
+                </p>
+
+                <div class="card p-3 p-sm-4 bg-white border-0 shadow-sm rounded-3">
+                    <form id="formWhatsAppModal" novalidate>
+                        <!-- 1. Patient Name -->
+                        <div class="mb-3">
+                            <label for="wa_modal_name" class="form-label fw-semibold small text-dark">
+                                Patient Name <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i></span>
+                                <input type="text" 
+                                       class="form-control border-start-0" 
+                                       id="wa_modal_name" 
+                                       placeholder="Your Full Name (e.g. Ananya Sharma)" 
+                                       required>
+                            </div>
+                            <div class="invalid-feedback d-none" id="wa_modal_name_error">
+                                <i class="bi bi-exclamation-circle me-1"></i> Please enter your name.
+                            </div>
+                        </div>
+
+                        <!-- 2. Selected Treatment -->
+                        <div class="mb-3">
+                            <label for="wa_modal_treatment" class="form-label fw-semibold small text-dark">
+                                Selected Treatment <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-sparkles"></i></span>
+                                <select class="form-select border-start-0" id="wa_modal_treatment" required>
+                                    <option value="" selected>-- Select Desired Treatment --</option>
+                                    {% for treat in global_treatments %}
+                                    <option value="{{ treat.name }}">{{ treat.name }}</option>
+                                    {% endfor %}
+                                    <option value="General Clinical Consultation">General Clinical Consultation</option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback d-none" id="wa_modal_treatment_error">
+                                <i class="bi bi-exclamation-circle me-1"></i> Please select a treatment.
+                            </div>
+                        </div>
+
+                        <!-- 3. Preferred Date -->
+                        <div class="mb-3">
+                            <label for="wa_modal_date" class="form-label fw-semibold small text-dark">
+                                Preferred Date <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+                                <input type="date" 
+                                       class="form-control border-start-0" 
+                                       id="wa_modal_date" 
+                                       required>
+                            </div>
+                            <div class="invalid-feedback d-none" id="wa_modal_date_error">
+                                <i class="bi bi-exclamation-circle me-1"></i> Please choose a consultation date.
+                            </div>
+                        </div>
+
+                        <!-- 4. Preferred Time -->
+                        <div class="mb-4">
+                            <label for="wa_modal_time" class="form-label fw-semibold small text-dark">
+                                Preferred Time <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-clock"></i></span>
+                                <select class="form-select border-start-0" id="wa_modal_time" required>
+                                    <option value="" selected>-- Select Preferred Time --</option>
+                                    {% for slot_val, slot_label in global_time_slots %}
+                                    <option value="{{ slot_label }}">{{ slot_label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="invalid-feedback d-none" id="wa_modal_time_error">
+                                <i class="bi bi-exclamation-circle me-1"></i> Please choose a preferred time slot.
+                            </div>
+                        </div>
+
+                        <!-- CTA Action Button -->
+                        <button type="button" 
+                                id="wa_modal_btn_submit" 
+                                class="btn btn-success btn-lg w-100 py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                                data-whatsapp="{{ site_config.clean_whatsapp_number|default:CLINIC_WHATSAPP_CLEAN }}">
+                            <i class="bi bi-whatsapp fs-5"></i> Book via WhatsApp
+                        </button>
+                    </form>
+                </div>
+
+                <div class="text-center mt-3">
+                    <small class="text-muted d-block">
+                        <i class="bi bi-shield-check text-success me-1"></i> No advance payment required. Slot verified directly by our clinic team.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const waModal = document.getElementById('whatsappBookingModal');
+    if (!waModal) return;
+
+    // Set min date to today on modal date picker
+    const waDateInput = document.getElementById('wa_modal_date');
+    if (waDateInput) {
+        const todayIso = new Date().toISOString().split('T')[0];
+        waDateInput.setAttribute('min', todayIso);
+    }
+
+    // Populate pre-selected treatment if opened from a button with data-treatment-name
+    waModal.addEventListener('show.bs.modal', function(event) {
+        const triggerBtn = event.relatedTarget;
+        if (triggerBtn && triggerBtn.getAttribute('data-treatment-name')) {
+            const treatName = triggerBtn.getAttribute('data-treatment-name');
+            const treatSelect = document.getElementById('wa_modal_treatment');
+            if (treatSelect) {
+                for (let i = 0; i < treatSelect.options.length; i++) {
+                    if (treatSelect.options[i].value === treatName) {
+                        treatSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
+    const btnSubmit = document.getElementById('wa_modal_btn_submit');
+    if (!btnSubmit) return;
+
+    btnSubmit.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const waNumber = this.getAttribute('data-whatsapp');
+        if (!waNumber) {
+            alert('WhatsApp booking is currently unavailable. Please call the clinic or use the online booking form.');
+            return;
+        }
+
+        const nameInput = document.getElementById('wa_modal_name');
+        const treatSelect = document.getElementById('wa_modal_treatment');
+        const dateInput = document.getElementById('wa_modal_date');
+        const timeSelect = document.getElementById('wa_modal_time');
+
+        const nameErr = document.getElementById('wa_modal_name_error');
+        const treatErr = document.getElementById('wa_modal_treatment_error');
+        const dateErr = document.getElementById('wa_modal_date_error');
+        const timeErr = document.getElementById('wa_modal_time_error');
+
+        // Reset errors
+        [nameInput, treatSelect, dateInput, timeSelect].forEach(el => el && el.classList.remove('is-invalid'));
+        [nameErr, treatErr, dateErr, timeErr].forEach(el => el && el.classList.add('d-none'));
+
+        const patientName = nameInput ? nameInput.value.trim() : '';
+        const treatmentName = (treatSelect && treatSelect.selectedIndex > 0) ? treatSelect.options[treatSelect.selectedIndex].value : '';
+        const preferredDate = dateInput ? dateInput.value.trim() : '';
+        const preferredTime = (timeSelect && timeSelect.selectedIndex > 0) ? timeSelect.options[timeSelect.selectedIndex].value : '';
+
+        let hasError = false;
+
+        if (!patientName) {
+            nameInput.classList.add('is-invalid');
+            nameErr.classList.remove('d-none');
+            hasError = true;
+        }
+        if (!treatmentName) {
+            treatSelect.classList.add('is-invalid');
+            treatErr.classList.remove('d-none');
+            hasError = true;
+        }
+        if (!preferredDate) {
+            dateInput.classList.add('is-invalid');
+            dateErr.classList.remove('d-none');
+            hasError = true;
+        }
+        if (!preferredTime) {
+            timeSelect.classList.add('is-invalid');
+            timeErr.classList.remove('d-none');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Generate formatted WhatsApp message
+        const clinicName = "{{ CLINIC_NAME|escapejs }}";
+        const messageLines = [
+            `Hello ${clinicName}, I would like to book an appointment:`,
+            `• Patient Name: ${patientName}`,
+            `• Selected Treatment: ${treatmentName}`,
+            `• Preferred Date: ${preferredDate}`,
+            `• Preferred Time: ${preferredTime}`,
+            ``,
+            `Please confirm slot availability. Thank you!`
+        ];
+
+        const fullMsg = messageLines.join('\n');
+        const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(fullMsg)}`;
+
+        // Close modal and open WhatsApp
+        const bsModal = bootstrap.Modal.getInstance(waModal);
+        if (bsModal) bsModal.hide();
+
+        window.open(waUrl, '_blank');
+    });
+
+    // Real-time input error removal
+    ['wa_modal_name', 'wa_modal_treatment', 'wa_modal_date', 'wa_modal_time'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => el.classList.remove('is-invalid'));
+            el.addEventListener('change', () => el.classList.remove('is-invalid'));
+        }
+    });
+});
+</script>

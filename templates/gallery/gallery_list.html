@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}Clinic Photo Gallery | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Clinical Sanctuary</span>
+        <h1>Clinic Photo Gallery</h1>
+        <p class="section-subtitle mb-0">Take a virtual tour of our consultation suites, US-FDA laser infrastructure, and state-of-the-art facilities.</p>
+    </div>
+</div>
+
+<section class="section-padding">
+    <div class="container">
+        <!-- Category Filter Pills -->
+        {% if categories %}
+        <div class="filter-pills-nav">
+            <a href="{% url 'gallery:gallery_list' %}" class="filter-pill {% if not selected_category %}active{% endif %}">
+                All Photos
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'gallery:gallery_list' %}?category={{ cat.slug }}" class="filter-pill {% if selected_category.slug == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Image Gallery Grid -->
+        <div class="row g-4">
+            {% for img in images %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper" style="height: 260px;">
+                        <a href="{{ img.image|fallback_img:'gallery' }}" target="_blank" title="{{ img.title|default:'View full size' }}">
+                            <img src="{{ img.image|fallback_img:'gallery' }}" alt="{{ img.alt_text|default:img.title }}">
+                        </a>
+                        <span class="card-badge">{{ img.category.name }}</span>
+                    </div>
+                    {% if img.title or img.description %}
+                    <div class="p-3">
+                        {% if img.title %}
+                        <h6 class="fw-bold mb-1 text-dark">{{ img.title }}</h6>
+                        {% endif %}
+                        {% if img.description %}
+                        <p class="text-muted small mb-0">{{ img.description }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No photos currently uploaded in this album.</p>
+                <a href="{% url 'gallery:gallery_list' %}" class="btn btn-outline-primary">View All Albums</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Virtual Consultation CTA -->
+<section class="section-padding bg-white border-top border-light text-center">
+    <div class="container">
+        <h3 class="section-title">Experience Our Clinic In Person</h3>
+        <p class="section-subtitle">We invite you to visit our tranquil clinic suites for an in-depth dermatological consultation.</p>
+        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-calendar2-check"></i> Book An In-Clinic Visit
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% load static %}
+<footer class="pt-5 pb-4 mt-5">
+    <div class="container pt-3">
+        <div class="row g-4 g-lg-5 mb-5">
+            <!-- Clinic Identity -->
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand mb-3">
+                    {% if site_config.logo_dark %}
+                    <img src="{{ site_config.logo_dark.url }}" alt="{{ CLINIC_NAME }}" style="max-height: 44px;">
+                    {% else %}
+                    <h4 class="text-white mb-0" style="font-family: var(--font-heading); letter-spacing: -0.01em;">
+                        {{ CLINIC_NAME }}<span style="color: var(--color-secondary);">.</span>
+                    </h4>
+                    {% endif %}
+                </div>
+                <p class="text-muted small mb-4" style="line-height: 1.8;">
+                    {% if site_config.tagline %}
+                    {{ site_config.tagline }}
+                    {% else %}
+                    Delivering scientific excellence, clinical precision, and bespoke dermatology and aesthetic solutions.
+                    {% endif %}
+                </p>
+
+                <!-- Social Media -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    {% if site_config.facebook_url %}
+                    <a href="{{ site_config.facebook_url }}" target="_blank" class="footer-social-link" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    {% endif %}
+                    {% if site_config.instagram_url %}
+                    <a href="{{ site_config.instagram_url }}" target="_blank" class="footer-social-link" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    {% endif %}
+                    {% if site_config.twitter_url %}
+                    <a href="{{ site_config.twitter_url }}" target="_blank" class="footer-social-link" title="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    {% endif %}
+                    {% if site_config.youtube_url %}
+                    <a href="{{ site_config.youtube_url }}" target="_blank" class="footer-social-link" title="YouTube"><i class="bi bi-youtube"></i></a>
+                    {% endif %}
+                    {% if site_config.linkedin_url %}
+                    <a href="{{ site_config.linkedin_url }}" target="_blank" class="footer-social-link" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="col-lg-2 col-md-6 col-6">
+                <h6 class="footer-heading">Clinic</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{% url 'core:home' %}">Home</a></li>
+                    <li class="mb-2"><a href="{% url 'core:about' %}">About Us</a></li>
+                    <li class="mb-2"><a href="{% url 'doctors:doctor_list' %}">Specialists</a></li>
+                    <li class="mb-2"><a href="{% url 'gallery:before_after' %}">Before & After</a></li>
+                    <li class="mb-2"><a href="{% url 'gallery:gallery_list' %}">Gallery</a></li>
+                    <li class="mb-2"><a href="{% url 'core:testimonials' %}">Patient Stories</a></li>
+                </ul>
+            </div>
+
+            <!-- Treatments & Discover -->
+            <div class="col-lg-3 col-md-6 col-6">
+                <h6 class="footer-heading">Treatments & Info</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="{% url 'treatments:treatment_list' %}">All Treatments</a></li>
+                    <li class="mb-2"><a href="{% url 'treatments:offer_list' %}">Special Offers</a></li>
+                    <li class="mb-2"><a href="{% url 'blog:post_list' %}">Health Journal</a></li>
+                    <li class="mb-2"><a href="{% url 'core:faq' %}">FAQs</a></li>
+                    <li class="mb-2"><a href="{% url 'core:contact' %}">Contact Us</a></li>
+                    <li class="mb-2"><a href="{% url 'appointments:book_appointment' %}" class="text-warning fw-semibold">Book Consultation</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact & Hours -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="footer-heading">Visit Us</h6>
+                <ul class="list-unstyled small mb-3 text-muted">
+                    {% if CLINIC_ADDRESS %}
+                    <li class="mb-3 d-flex align-items-start gap-2">
+                        <i class="bi bi-geo-alt-fill text-warning mt-1 flex-shrink-0"></i>
+                        <span>{{ CLINIC_ADDRESS }}</span>
+                    </li>
+                    {% endif %}
+                    {% if CLINIC_PHONE %}
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-telephone-fill text-warning flex-shrink-0"></i>
+                        <a href="tel:{{ CLINIC_PHONE }}" class="text-light">{{ CLINIC_PHONE }}</a>
+                    </li>
+                    {% endif %}
+                    {% if site_config.whatsapp_number or CLINIC_WHATSAPP_CLEAN %}
+                    <li class="mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-whatsapp text-success flex-shrink-0"></i>
+                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#whatsappBookingModal" class="text-success fw-medium">Book via WhatsApp</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                {% if site_config.working_hours_weekday %}
+                <div class="border-top border-secondary pt-3 mt-3">
+                    <h6 class="text-light small fw-bold mb-2"><i class="bi bi-clock me-1 text-warning"></i> Operating Hours</h6>
+                    <p class="text-muted small mb-1">{{ site_config.working_hours_weekday }}</p>
+                    {% if site_config.working_hours_weekend %}
+                    <p class="text-muted small mb-0">{{ site_config.working_hours_weekend }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr class="border-secondary mb-4 opacity-25">
+
+        <div class="row align-items-center text-muted small">
+            <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                &copy; {% now "Y" %} {{ CLINIC_NAME }}. All Rights Reserved.
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <span>Medical Aesthetic Excellence &amp; Patient Safety First</span>
+            </div>
+        </div>
+    </div>
+</footer>

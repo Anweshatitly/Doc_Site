@@ -1,0 +1,787 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}{{ CLINIC_NAME }} | Premier Dermatology, Hair Restoration & Aesthetic Clinic{% endif %}{% endblock %}
+
+{% block content %}
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 1: HERO SECTION
+     ══════════════════════════════════════════════════════════════════════════ -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="section-tag">
+                    <i class="bi bi-patch-check-fill text-warning"></i> Board-Certified Medical Aesthetics
+                </span>
+                <h1 class="hero-title">
+                    Scientific Dermatology. <br>
+                    <span style="color: var(--color-primary); font-style: italic;">Natural Radiance.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    {% if site_config.about_short %}
+                    {{ site_config.about_short }}
+                    {% else %}
+                    Experience bespoke skin rejuvenation, US-FDA approved laser therapies, and advanced hair restoration guided by top dermatologists in an elegant clinical sanctuary.
+                    {% endif %}
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-calendar2-check"></i> Book Consultation
+                    </a>
+                    {% if site_config.whatsapp_number or CLINIC_WHATSAPP_CLEAN %}
+                    <button type="button" class="btn btn-outline-success btn-lg d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#whatsappBookingModal">
+                        <i class="bi bi-whatsapp"></i> Book via WhatsApp
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'treatments:treatment_list' %}" class="btn btn-outline-primary btn-lg">
+                        Explore Treatments <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-4 text-muted small pt-2">
+                    <span><i class="bi bi-shield-check text-success me-1"></i> US-FDA Approved</span>
+                    <span><i class="bi bi-person-check text-success me-1"></i> Certified Specialists</span>
+                    <span><i class="bi bi-star-fill text-warning me-1"></i> 4.9/5 Rating ({{ testimonial_count }}+ Reviews)</span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image-wrapper">
+                    <img src="{{ site_config.hero_image|fallback_img:'hero' }}" alt="{{ CLINIC_NAME }} Clinical Suite">
+                    <div class="hero-badge-float">
+                        <div class="badge-icon">
+                            <i class="bi bi-award-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold text-dark">Award-Winning Care</h6>
+                            <small class="text-muted">{{ case_count|default:"15" }}+ Documented Transformations</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 2: SHORT CLINIC INTRODUCTION & STATS STRIP
+     ══════════════════════════════════════════════════════════════════════════ -->
+<section class="section-padding-sm pt-0">
+    <div class="container">
+        <!-- Live Stats Strip -->
+        <div class="stats-strip mb-5">
+            <div class="row g-4 justify-content-between text-center">
+                <div class="col-md-3 col-6 stat-item">
+                    <div class="stat-number">14+</div>
+                    <div class="stat-label">Years Clinical Excellence</div>
+                </div>
+                <div class="col-md-3 col-6 stat-item">
+                    <div class="stat-number">{{ doctor_count }}+</div>
+                    <div class="stat-label">Board-Certified Specialists</div>
+                </div>
+                <div class="col-md-3 col-6 stat-item">
+                    <div class="stat-number">{{ treatment_count }}+</div>
+                    <div class="stat-label">Evidence-Based Procedures</div>
+                </div>
+                <div class="col-md-3 col-6 stat-item">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Patient Satisfaction</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Short Introduction Block -->
+        <div class="row align-items-center g-5 pt-3">
+            <div class="col-lg-6">
+                <span class="section-tag">Clinical Sanctuary</span>
+                <h2 class="section-title">A New Standard In Dermatological Care</h2>
+                <div class="text-muted fs-6 mb-4" style="line-height: 1.85;">
+                    {% if site_config.about_full %}
+                    <p>{{ site_config.about_full|truncatewords:65 }}</p>
+                    {% else %}
+                    <p>
+                        At {{ CLINIC_NAME }}, we believe healthy skin and strong hair are products of medical science, diagnostic rigor, and personalized care. Every procedure is administered by certified medical professionals utilizing modern clinical hardware in an impeccably sterile environment.
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'core:about' %}" class="btn btn-outline-primary">
+                        Read Our Full Story <i class="bi bi-arrow-right"></i>
+                    </a>
+                    {% if site_config.phone_primary %}
+                    <a href="tel:{{ site_config.phone_primary }}" class="btn btn-light text-primary">
+                        <i class="bi bi-telephone me-1"></i> Speak With Concierge
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image-wrapper">
+                    <img src="{{ site_config.about_image|fallback_img:'about' }}" alt="About {{ CLINIC_NAME }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 3: FEATURED TREATMENTS
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if featured_treatments %}
+<section class="section-padding bg-white border-top border-bottom border-light">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <span class="section-tag">Signature Services</span>
+                <h2 class="section-title mb-0">Featured Treatments</h2>
+            </div>
+            <a href="{% url 'treatments:treatment_list' %}" class="btn btn-outline-primary mt-3 mt-md-0">
+                View All Treatments <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for treatment in featured_treatments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper">
+                        <img src="{{ treatment.image|fallback_img:'treatment' }}" alt="{{ treatment.name }}">
+                        <span class="card-badge">{{ treatment.category.name }}</span>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="card-meta">
+                            {% if treatment.duration %}
+                            <span><i class="bi bi-clock me-1"></i>{{ treatment.duration }}</span>
+                            {% endif %}
+                            {% if treatment.price_range %}
+                            <span><i class="bi bi-tag me-1"></i>{{ treatment.price_range }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold mb-2">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="text-dark">
+                                {{ treatment.name }}
+                            </a>
+                        </h5>
+
+                        <p class="text-muted small mb-3 flex-grow-1">
+                            {{ treatment.short_description|truncatewords:18 }}
+                        </p>
+
+                        {% if treatment.benefits %}
+                        <ul class="list-unstyled small text-muted mb-4 border-top pt-2">
+                            {% for b in treatment.benefits|split_lines|slice:":2" %}
+                            <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> {{ b }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
+                                Learn More
+                            </a>
+                            <a href="{% url 'appointments:book_appointment' %}?treatment={{ treatment.slug }}" class="btn btn-primary btn-sm flex-fill">
+                                Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 4: SKIN CARE TREATMENTS
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if skin_treatments %}
+<section class="section-padding">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <span class="section-tag">Dermatology & Facial Aesthetics</span>
+                <h2 class="section-title mb-0">Advanced Skin Care Treatments</h2>
+            </div>
+            {% if skin_category %}
+            <a href="{% url 'treatments:treatment_list' %}?category={{ skin_category.slug }}" class="btn btn-outline-primary mt-3 mt-md-0">
+                Explore All Skin Care <i class="bi bi-arrow-right"></i>
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="row g-4">
+            {% for treatment in skin_treatments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper" style="height: 200px;">
+                        <img src="{{ treatment.image|fallback_img:'treatment' }}" alt="{{ treatment.name }}">
+                        <span class="card-badge">Skin Care</span>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="card-meta">
+                            {% if treatment.duration %}
+                            <span><i class="bi bi-clock me-1"></i>{{ treatment.duration }}</span>
+                            {% endif %}
+                            {% if treatment.price_range %}
+                            <span><i class="bi bi-tag me-1"></i>{{ treatment.price_range }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold mb-2">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="text-dark">
+                                {{ treatment.name }}
+                            </a>
+                        </h5>
+
+                        <p class="text-muted small mb-3 flex-grow-1">
+                            {{ treatment.short_description|truncatewords:16 }}
+                        </p>
+
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
+                                Procedure Details
+                            </a>
+                            <a href="{% url 'appointments:book_appointment' %}?treatment={{ treatment.slug }}" class="btn btn-primary btn-sm flex-fill">
+                                Book
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 5: HAIR CARE TREATMENTS
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if hair_treatments %}
+<section class="section-padding bg-white border-top border-bottom border-light">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <span class="section-tag">Trichology & Follicular Restoration</span>
+                <h2 class="section-title mb-0">Hair & Scalp Health Treatments</h2>
+            </div>
+            {% if hair_category %}
+            <a href="{% url 'treatments:treatment_list' %}?category={{ hair_category.slug }}" class="btn btn-outline-primary mt-3 mt-md-0">
+                Explore All Hair Therapies <i class="bi bi-arrow-right"></i>
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="row g-4">
+            {% for treatment in hair_treatments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper" style="height: 200px;">
+                        <img src="{{ treatment.image|fallback_img:'treatment' }}" alt="{{ treatment.name }}">
+                        <span class="card-badge">Hair Care</span>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="card-meta">
+                            {% if treatment.duration %}
+                            <span><i class="bi bi-clock me-1"></i>{{ treatment.duration }}</span>
+                            {% endif %}
+                            {% if treatment.price_range %}
+                            <span><i class="bi bi-tag me-1"></i>{{ treatment.price_range }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold mb-2">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="text-dark">
+                                {{ treatment.name }}
+                            </a>
+                        </h5>
+
+                        <p class="text-muted small mb-3 flex-grow-1">
+                            {{ treatment.short_description|truncatewords:16 }}
+                        </p>
+
+                        <div class="d-flex gap-2 mt-auto">
+                            <a href="{% url 'treatments:treatment_detail' treatment.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
+                                Procedure Details
+                            </a>
+                            <a href="{% url 'appointments:book_appointment' %}?treatment={{ treatment.slug }}" class="btn btn-primary btn-sm flex-fill">
+                                Book
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 6: DOCTORS
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if doctors %}
+<section class="section-padding">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag">Medical Specialists</span>
+            <h2 class="section-title">Meet Our Medical Leadership</h2>
+            <p class="section-subtitle">Board-certified dermatologists, trichologists, and aesthetic physicians guiding your care.</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            {% for doctor in doctors %}
+            <div class="col-lg-3 col-md-6">
+                <div class="doctor-card">
+                    <div class="doctor-img-box">
+                        <img src="{{ doctor.photo|fallback_img:'doctor' }}" alt="Dr. {{ doctor.name }}">
+                    </div>
+                    <div class="p-3 text-center d-flex flex-column">
+                        <h5 class="fw-bold mb-1">
+                            <a href="{% url 'doctors:doctor_detail' doctor.slug %}" class="text-dark">
+                                Dr. {{ doctor.name }}
+                            </a>
+                        </h5>
+                        <div class="text-primary small fw-semibold mb-2">{{ doctor.designation }}</div>
+                        <p class="text-muted small mb-3">
+                            {{ doctor.qualifications|truncatechars:45 }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center border-top pt-2 small text-muted mb-3">
+                            <span><i class="bi bi-briefcase me-1"></i> {{ doctor.experience_years }}+ Yrs Exp</span>
+                            {% if doctor.consultation_fee %}
+                            <span class="fw-semibold text-dark">{{ doctor.consultation_fee }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'appointments:book_appointment' %}?doctor={{ doctor.slug }}" class="btn btn-outline-primary btn-sm w-100">
+                            Book Consultation
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'doctors:doctor_list' %}" class="btn btn-outline-primary">
+                View All Medical Specialists <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 7: WHY CHOOSE US
+     ══════════════════════════════════════════════════════════════════════════ -->
+<section class="section-padding bg-white border-top border-bottom border-light">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="section-tag">Clinical Standards</span>
+                <h2 class="section-title">Why Patients Choose {{ CLINIC_NAME }}</h2>
+                <p class="text-muted mb-4">
+                    We distinguish ourselves through medical rigor, high-precision equipment, and absolute transparency in procedural outcomes.
+                </p>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="contact-icon flex-shrink-0">
+                        <i class="bi bi-award"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">US-FDA Certified Technology</h6>
+                        <p class="text-muted small mb-0">Every laser system, centrifuge, and diagnostic scanner is verified for clinical efficacy and patient safety.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="contact-icon flex-shrink-0">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Hospital-Grade Sterilization Protocols</h6>
+                        <p class="text-muted small mb-0">Class-100 clean rooms and triple autoclave cycles ensure an uncompromisingly hygienic environment for every session.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="contact-icon flex-shrink-0">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Zero Commercial Pressure</h6>
+                        <p class="text-muted small mb-0">We never push unnecessary procedures. Our dermatologists formulate realistic, phased plans tailored to your goals.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image-wrapper">
+                    <img src="{{ site_config.about_image|fallback_img:'about' }}" alt="{{ CLINIC_NAME }} Clinical Standards">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 8: BEFORE & AFTER TRANSFORMATION CASE STUDIES
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if before_after_cases %}
+<section class="section-padding">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <span class="section-tag">Documented Transformations</span>
+                <h2 class="section-title mb-0">Before & After Case Studies</h2>
+            </div>
+            <a href="{% url 'gallery:before_after' %}" class="btn btn-outline-primary mt-3 mt-md-0">
+                View Full Gallery <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for case in before_after_cases %}
+            <div class="col-lg-4 col-md-6">
+                <div class="ba-comparison-card">
+                    <div class="ba-images-row">
+                        <div class="ba-img-half">
+                            <img src="{{ case.before_image|fallback_img:'before' }}" alt="Before {{ case.title|default:case.treatment.name }}">
+                            <span class="ba-tag">Before</span>
+                        </div>
+                        <div class="ba-img-half">
+                            <img src="{{ case.after_image|fallback_img:'after' }}" alt="After {{ case.title|default:case.treatment.name }}">
+                            <span class="ba-tag ba-tag-after">After</span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <span class="badge bg-light text-primary mb-1">{{ case.treatment.name }}</span>
+                        <h6 class="fw-bold mb-1">{{ case.title|default:case.treatment.name }}</h6>
+                        <small class="text-muted d-block mb-2">{{ case.sessions_completed }}</small>
+                        <a href="{% url 'appointments:book_appointment' %}?treatment={{ case.treatment.slug }}" class="small fw-semibold text-primary">
+                            Inquire for Similar Results <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 9: TESTIMONIALS
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if testimonials %}
+<section class="section-padding bg-white border-top border-bottom border-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag">Patient Experiences</span>
+            <h2 class="section-title">Verified Patient Reviews</h2>
+            <p class="section-subtitle">Real feedback from patients who entrusted their skin and hair health to our medical care.</p>
+        </div>
+
+        <div class="row g-4">
+            {% for t in testimonials %}
+            <div class="col-lg-4 col-md-6">
+                <div class="testimonial-card">
+                    <div>
+                        <div class="testimonial-stars">
+                            {% for i in "12345" %}
+                            {% if forloop.counter <= t.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                            <span class="ms-1 small text-muted">({{ t.rating }}.0)</span>
+                        </div>
+                        <p class="testimonial-quote">"{{ t.content }}"</p>
+                    </div>
+                    <div class="testimonial-patient border-top pt-3">
+                        <img src="{{ t.photo|fallback_img:'patient' }}" alt="{{ t.name }}" class="patient-avatar">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">{{ t.name }}</h6>
+                            <small class="text-muted">
+                                {{ t.designation|default:"Patient" }}{% if t.location %} · {{ t.location }}{% endif %}
+                            </small>
+                            {% if t.treatment %}
+                            <div class="small text-primary fw-medium">{{ t.treatment.name }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'core:testimonials' %}" class="btn btn-outline-primary">
+                Read All Reviews <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 10: CURRENT OFFERS & SPECIAL PACKAGES
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if current_offers %}
+<section class="section-padding">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag section-tag-gold">Promotions & Bundles</span>
+            <h2 class="section-title">Active Packages & Special Offers</h2>
+            <p class="section-subtitle">Curated multi-step packages designed to maximize clinical synergy and patient savings.</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            {% for offer in current_offers %}
+            <div class="col-lg-4 col-md-6">
+                <div class="offer-card">
+                    {% if offer.discount_text %}
+                    <div class="offer-ribbon">{{ offer.discount_text }}</div>
+                    {% endif %}
+                    <div class="card-img-wrapper" style="height: 200px;">
+                        <img src="{{ offer.image|fallback_img:'offer' }}" alt="{{ offer.title }}">
+                    </div>
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <h5 class="fw-bold mb-2">{{ offer.title }}</h5>
+                        <p class="text-muted small mb-3">{{ offer.short_description }}</p>
+                        
+                        <div class="d-flex align-items-baseline gap-2 mb-3">
+                            {% if offer.original_price %}
+                            <span class="text-muted text-decoration-line-through small">₹{{ offer.original_price }}</span>
+                            {% endif %}
+                            {% if offer.offer_price %}
+                            <span class="fs-4 fw-bold text-success">₹{{ offer.offer_price }}</span>
+                            {% endif %}
+                            {% if offer.savings %}
+                            <span class="badge bg-light text-success ms-auto">Save ₹{{ offer.savings }}</span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{% url 'treatments:offer_list' %}" class="btn btn-secondary-clinic btn-sm mt-auto w-100">
+                            Claim Package Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 11: LATEST BLOG POSTS
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if latest_posts %}
+<section class="section-padding bg-white border-top border-bottom border-light">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-5">
+            <div>
+                <span class="section-tag">Clinical Journal</span>
+                <h2 class="section-title mb-0">Latest Skincare & Hair Insights</h2>
+            </div>
+            <a href="{% url 'blog:post_list' %}" class="btn btn-outline-primary mt-3 mt-md-0">
+                Explore Blog <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for post in latest_posts %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper">
+                        <img src="{{ post.featured_image|fallback_img:'blog' }}" alt="{{ post.title }}">
+                        {% if post.category %}
+                        <span class="card-badge">{{ post.category.name }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="card-meta">
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ post.published_at|date:"M d, Y" }}</span>
+                            <span><i class="bi bi-clock me-1"></i>{{ post.reading_time }} min read</span>
+                        </div>
+                        <h5 class="fw-bold mb-2">
+                            <a href="{% url 'blog:post_detail' post.slug %}" class="text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="text-muted small mb-3 flex-grow-1">
+                            {{ post.excerpt|truncatewords:18 }}
+                        </p>
+                        <a href="{% url 'blog:post_detail' post.slug %}" class="fw-semibold small text-primary mt-auto">
+                            Read Full Article <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 12: FREQUENTLY ASKED QUESTIONS (FAQ)
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% if faqs %}
+<section class="section-padding">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag">Patient Guidance</span>
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <p class="section-subtitle">Common questions regarding consultations, procedure safety, and recovery.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="accordion" id="homeFaqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item shadow-sm">
+                        <h2 class="accordion-header" id="headingH{{ faq.pk }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseH{{ faq.pk }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapseH{{ faq.pk }}">
+                                <span class="badge bg-light text-primary me-2 px-2 py-1 small fw-normal">{{ faq.get_category_display }}</span>
+                                {{ faq.question }}
+                            </button>
+                        </h2>
+                        <div id="collapseH{{ faq.pk }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="headingH{{ faq.pk }}" data-bs-parent="#homeFaqAccordion">
+                            <div class="accordion-body">
+                                {{ faq.answer|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'core:faq' %}" class="small fw-semibold text-primary">
+                        Have more questions? View our complete FAQ section <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 13: APPOINTMENT CTA BANNER
+     ══════════════════════════════════════════════════════════════════════════ -->
+<section class="section-padding" style="background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%); color: #ffffff;">
+    <div class="container text-center py-3">
+        <span class="section-tag" style="background: rgba(255,255,255,0.15); color: #ffffff; border-color: rgba(255,255,255,0.3);">
+            Take The First Step
+        </span>
+        <h2 class="display-5 text-white fw-bold mb-3" style="font-family: var(--font-heading);">
+            Begin Your Personalized Treatment Plan
+        </h2>
+        <p class="text-white-50 fs-5 mb-4 mx-auto" style="max-width: 620px;">
+            Schedule a diagnostic mapping consultation with our senior specialists. We will assess your skin or scalp and prescribe a scientific, phased protocol.
+        </p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{% url 'appointments:book_appointment' %}" class="btn btn-white btn-lg">
+                <i class="bi bi-calendar2-check"></i> Book Your Consultation
+            </a>
+            {% if site_config.whatsapp_number or CLINIC_WHATSAPP_CLEAN %}
+            <button type="button" class="btn btn-outline-light btn-lg d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#whatsappBookingModal">
+                <i class="bi bi-whatsapp"></i> Book via WhatsApp
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 14: CONTACT INFORMATION & CLINIC DETAILS
+     ══════════════════════════════════════════════════════════════════════════ -->
+<section class="section-padding bg-white border-top border-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-tag">Direct Contact</span>
+            <h2 class="section-title">Visit Our Clinic Suite</h2>
+            <p class="section-subtitle">We are conveniently located with dedicated patient parking and wheelchair accessibility.</p>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+            <!-- Physical Location -->
+            <div class="col-md-4">
+                <div class="clinic-card p-4 text-center h-100">
+                    <div class="contact-icon mx-auto mb-3">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Clinic Address</h5>
+                    <p class="text-muted small mb-3">
+                        {{ site_config.address|default:CLINIC_ADDRESS }}<br>
+                        {{ site_config.city }}, {{ site_config.state }} - {{ site_config.pincode }}
+                    </p>
+                    {% if site_config.google_maps_link %}
+                    <a href="{{ site_config.google_maps_link }}" target="_blank" class="small fw-semibold text-primary mt-auto">
+                        Get Driving Directions <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Phone & Email -->
+            <div class="col-md-4">
+                <div class="clinic-card p-4 text-center h-100">
+                    <div class="contact-icon mx-auto mb-3">
+                        <i class="bi bi-telephone-inbound-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Direct Inquiries</h5>
+                    <p class="text-muted small mb-2">
+                        {% if site_config.phone_primary %}
+                        <a href="tel:{{ site_config.phone_primary }}" class="text-dark fw-medium">{{ site_config.phone_primary }}</a>
+                        {% endif %}
+                        {% if site_config.phone_secondary %}
+                        <br><a href="tel:{{ site_config.phone_secondary }}" class="text-muted">{{ site_config.phone_secondary }}</a>
+                        {% endif %}
+                    </p>
+                    <p class="text-muted small mb-3">
+                        {% if site_config.email_primary %}
+                        <a href="mailto:{{ site_config.email_primary }}" class="text-primary">{{ site_config.email_primary }}</a>
+                        {% endif %}
+                    </p>
+                    {% if site_config.whatsapp_number %}
+                    <a href="https://wa.me/{{ site_config.whatsapp_number }}" target="_blank" class="small fw-semibold text-success mt-auto">
+                        <i class="bi bi-whatsapp me-1"></i> WhatsApp Helpline
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Operating Hours -->
+            <div class="col-md-4">
+                <div class="clinic-card p-4 text-center h-100">
+                    <div class="contact-icon mx-auto mb-3">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Consultation Hours</h5>
+                    <p class="text-muted small mb-1">
+                        <strong>Weekdays:</strong> {{ site_config.working_hours_weekday|default:"Mon–Fri: 9:00 AM – 7:30 PM" }}
+                    </p>
+                    <p class="text-muted small mb-3">
+                        <strong>Weekends:</strong> {{ site_config.working_hours_weekend|default:"Sat: 9:00 AM – 3:00 PM" }}
+                    </p>
+                    <a href="{% url 'core:contact' %}" class="small fw-semibold text-primary mt-auto">
+                        Send An Online Message <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Embedded Map if configured -->
+        {% if site_config.google_maps_embed %}
+        <div class="clinic-card mt-4 overflow-hidden shadow-sm" style="height: 320px;">
+            <div class="ratio ratio-21x9 h-100">
+                {{ site_config.google_maps_embed|safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 15: FOOTER (Inherited from base.html via _footer.html)
+     ══════════════════════════════════════════════════════════════════════════ -->
+{% endblock %}

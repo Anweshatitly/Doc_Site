@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if treatment.meta_title %}{{ treatment.meta_title }}{% else %}{{ treatment.name }} — {{ treatment.category.name }} | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block meta_description %}{% if treatment.meta_description %}{{ treatment.meta_description }}{% elif treatment.short_description %}{{ treatment.short_description }}{% else %}{{ treatment.name }} clinical procedure at {{ CLINIC_NAME }}. Learn benefits, duration, and protocol.{% endif %}{% endblock %}
+
+{% block og_title %}{% if treatment.meta_title %}{{ treatment.meta_title }}{% else %}{{ treatment.name }} | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+{% block og_description %}{% if treatment.meta_description %}{{ treatment.meta_description }}{% else %}{{ treatment.short_description }}{% endif %}{% endblock %}
+{% block og_image %}{% if treatment.image %}{{ request.scheme }}://{{ request.get_host }}{{ treatment.image.url }}{% elif treatment.banner_image %}{{ request.scheme }}://{{ request.get_host }}{{ treatment.banner_image.url }}{% endif %}{% endblock %}
+
+{% block extra_schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MedicalProcedure",
+  "name": "{{ treatment.name|escapejs }}",
+  "procedureType": "NonSurgicalProcedure",
+  "description": "{{ treatment.short_description|default:treatment.description|escapejs }}",
+  "bodyLocation": "{{ treatment.category.name|escapejs }}",
+  "followup": "{{ treatment.sessions_required|default:'Personalized protocol'|escapejs }}",
+  "howPerformed": "{{ treatment.duration|default:'In-clinic procedure'|escapejs }}",
+  "provider": {
+    "@type": "MedicalBusiness",
+    "name": "{{ CLINIC_NAME|escapejs }}"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Treatment Banner -->
+<section class="page-banner pb-4">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb justify-content-center small">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'treatments:treatment_list' %}">Treatments</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'treatments:treatment_list' %}?category={{ treatment.category.slug }}">{{ treatment.category.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ treatment.name }}</li>
+            </ol>
+        </nav>
+        <span class="section-tag">{{ treatment.category.name }}</span>
+        <h1>{{ treatment.name }}</h1>
+        <p class="section-subtitle mb-0">{{ treatment.short_description }}</p>
+    </div>
+</section>
+
+<!-- Main Details & Sidebar -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left Main Column -->
+            <div class="col-lg-8">
+                <!-- Main Featured Photo / Banner -->
+                <div class="hero-image-wrapper mb-5" style="max-height: 420px;">
+                    <img src="{% if treatment.banner_image %}{{ treatment.banner_image.url }}{% else %}{{ treatment.image|fallback_img:'treatment' }}{% endif %}" alt="{{ treatment.name }}">
+                </div>
+
+                <!-- Procedure Overview -->
+                <div class="mb-5">
+                    <h3 class="fw-bold mb-3">About The Procedure</h3>
+                    <div class="text-muted fs-6" style="line-height: 1.85;">
+                        {{ treatment.description|linebreaks }}
+                    </div>
+                </div>
+
+                <!-- Key Benefits -->
+                {% if benefits_list %}
+                <div class="mb-5 p-4 bg-white rounded-3 border">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-patch-check-fill text-primary me-2"></i> Clinical Benefits & Outcomes</h4>
+                    <div class="row g-3">
+                        {% for benefit in benefits_list %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0"></i>
+                                <span class="text-dark fw-medium">{{ benefit }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Before & After Results for this treatment -->
+                {% if before_after_images %}
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0">Clinical Case Transformations</h4>
+                        <a href="{% url 'gallery:before_after' %}" class="small text-primary fw-semibold">View All</a>
+                    </div>
+                    <div class="row g-4">
+                        {% for case in before_after_images %}
+                        <div class="col-md-6">
+                            <div class="ba-comparison-card">
+                                <div class="ba-images-row">
+                                    <div class="ba-img-half">
+                                        <img src="{{ case.before_image|fallback_img:'before' }}" alt="Before {{ treatment.name }}">
+                                        <span class="ba-tag">Before</span>
+                                    </div>
+                                    <div class="ba-img-half">
+                                        <img src="{{ case.after_image|fallback_img:'after' }}" alt="After {{ treatment.name }}">
+                                        <span class="ba-tag ba-tag-after">After</span>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <h6 class="fw-bold mb-1">{{ case.title|default:treatment.name }}</h6>
+                                    <small class="text-muted d-block">{{ case.sessions_completed }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Specialists Performing this treatment -->
+                {% if doctors %}
+                <div class="mb-5">
+                    <h4 class="fw-bold mb-3">Attending Doctors For This Procedure</h4>
+                    <div class="row g-3">
+                        {% for doc in doctors %}
+                        <div class="col-md-6">
+                            <div class="clinic-card p-3 d-flex align-items-center gap-3">
+                                <img src="{{ doc.photo|fallback_img:'doctor' }}" alt="Dr. {{ doc.name }}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-0">
+                                        <a href="{% url 'doctors:doctor_detail' doc.slug %}" class="text-dark">Dr. {{ doc.name }}</a>
+                                    </h6>
+                                    <small class="text-muted d-block">{{ doc.designation }}</small>
+                                </div>
+                                <a href="{% url 'appointments:book_appointment' %}?doctor={{ doc.slug }}&treatment={{ treatment.slug }}" class="btn btn-sm btn-outline-primary">
+                                    Book
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Sticky Sidebar -->
+            <div class="col-lg-4">
+                <div class="clinic-card p-4 sticky-top" style="top: 100px;">
+                    <span class="card-badge mb-3 d-inline-block">{{ treatment.category.name }}</span>
+                    <h4 class="fw-bold mb-3">{{ treatment.name }}</h4>
+
+                    <!-- Treatment Quick Facts -->
+                    <div class="p-3 bg-light rounded-3 mb-4">
+                        {% if treatment.price_range %}
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Estimated Pricing</small>
+                            <span class="fs-5 fw-bold text-success">{{ treatment.price_range }}</span>
+                        </div>
+                        {% endif %}
+                        {% if treatment.duration %}
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Session Duration</small>
+                            <span class="fw-semibold text-dark"><i class="bi bi-clock me-1 text-primary"></i> {{ treatment.duration }}</span>
+                        </div>
+                        {% endif %}
+                        {% if treatment.sessions_required %}
+                        <div>
+                            <small class="text-muted d-block">Recommended Protocol</small>
+                            <span class="fw-semibold text-dark"><i class="bi bi-calendar-check me-1 text-primary"></i> {{ treatment.sessions_required }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'appointments:book_appointment' %}?treatment={{ treatment.slug }}" class="btn btn-primary btn-lg w-100 mb-2">
+                        <i class="bi bi-calendar2-check"></i> Book This Treatment
+                    </a>
+
+                    {% if site_config.whatsapp_number or CLINIC_WHATSAPP_CLEAN %}
+                    <button type="button" 
+                            class="btn btn-outline-success btn-lg w-100 mb-4 d-flex align-items-center justify-content-center gap-2"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#whatsappBookingModal"
+                            data-treatment-name="{{ treatment.name }}">
+                        <i class="bi bi-whatsapp"></i> Book via WhatsApp
+                    </button>
+                    {% endif %}
+
+                    <!-- Clinic Safety Guarantees -->
+                    <div class="border-top pt-3 small text-muted">
+                        <div class="mb-2"><i class="bi bi-shield-check text-success me-1"></i> US-FDA Approved Medical Technology</div>
+                        <div class="mb-2"><i class="bi bi-person-check text-success me-1"></i> Formulated by Medical Dermatologists</div>
+                        <div><i class="bi bi-arrow-repeat text-success me-1"></i> Zero Compromise on Hygiene</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Treatments -->
+{% if related_treatments %}
+<section class="section-padding bg-white border-top border-light">
+    <div class="container">
+        <h3 class="section-title mb-4">Related {{ treatment.category.name }} Treatments</h3>
+        <div class="row g-4">
+            {% for rel in related_treatments %}
+            <div class="col-lg-4 col-md-6">
+                <div class="clinic-card">
+                    <div class="card-img-wrapper" style="height: 180px;">
+                        <img src="{{ rel.image|fallback_img:'treatment' }}" alt="{{ rel.name }}">
+                    </div>
+                    <div class="card-body-custom">
+                        <h6 class="fw-bold mb-2">
+                            <a href="{% url 'treatments:treatment_detail' rel.slug %}" class="text-dark">{{ rel.name }}</a>
+                        </h6>
+                        <p class="text-muted small mb-3 flex-grow-1">{{ rel.short_description|truncatewords:14 }}</p>
+                        <a href="{% url 'treatments:treatment_detail' rel.slug %}" class="fw-semibold small text-primary mt-auto">
+                            View Details <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

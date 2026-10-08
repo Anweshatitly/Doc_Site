@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}Frequently Asked Questions (FAQ) | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block extra_schema %}
+{% if faqs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faqs %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.question|escapejs }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.answer|striptags|escapejs }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Help & Answers</span>
+        <h1>Frequently Asked Questions</h1>
+        <p class="section-subtitle mb-0">Learn about our clinical methodologies, consultation fees, session protocols, and post-treatment care.</p>
+    </div>
+</div>
+
+<section class="section-padding">
+    <div class="container">
+        <!-- Category Filter Pills -->
+        <div class="filter-pills-nav">
+            <a href="{% url 'core:faq' %}?category=all" class="filter-pill {% if selected_category == 'all' or not selected_category %}active{% endif %}">
+                All Questions
+            </a>
+            {% for cat_key, cat_label in categories %}
+            <a href="{% url 'core:faq' %}?category={{ cat_key }}" class="filter-pill {% if selected_category == cat_key %}active{% endif %}">
+                {{ cat_label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- FAQ Accordion -->
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item shadow-sm">
+                        <h2 class="accordion-header" id="heading{{ faq.pk }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.pk }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ faq.pk }}">
+                                <span class="badge bg-light text-primary me-2 px-2 py-1 small fw-normal">{{ faq.get_category_display }}</span>
+                                {{ faq.question }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ faq.pk }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ faq.pk }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                {{ faq.answer|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <p class="text-muted fs-5">No questions found in this category.</p>
+                        <a href="{% url 'core:faq' %}" class="btn btn-outline-primary">View All FAQs</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Still Have Questions Card -->
+<section class="section-padding bg-white border-top border-light">
+    <div class="container text-center">
+        <div class="mx-auto" style="max-width: 600px;">
+            <div class="contact-icon mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.6rem;">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+            <h3 class="section-title">Still Have Questions?</h3>
+            <p class="text-muted mb-4">Our patient care team is available daily to discuss procedures, appointment scheduling, and treatment queries.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="{% url 'core:contact' %}" class="btn btn-primary">
+                    <i class="bi bi-envelope"></i> Send Us A Message
+                </a>
+                {% if site_config.whatsapp_number %}
+                <a href="https://wa.me/{{ site_config.whatsapp_number }}" target="_blank" class="btn btn-outline-success">
+                    <i class="bi bi-whatsapp"></i> Chat On WhatsApp
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

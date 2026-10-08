@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}Patient Testimonials & Reviews | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Patient Satisfaction</span>
+        <h1>Patient Stories & Clinical Reviews</h1>
+        <p class="section-subtitle mb-0">Read genuine feedback and clinical transformation experiences from patients treated at {{ CLINIC_NAME }}.</p>
+    </div>
+</div>
+
+<section class="section-padding">
+    <div class="container">
+        <!-- Rating Filter Pills -->
+        <div class="filter-pills-nav">
+            <a href="{% url 'core:testimonials' %}" class="filter-pill {% if not selected_rating %}active{% endif %}">
+                All Reviews
+            </a>
+            <a href="{% url 'core:testimonials' %}?rating=5" class="filter-pill {% if selected_rating == '5' %}active{% endif %}">
+                ★ 5 Star Reviews
+            </a>
+            <a href="{% url 'core:testimonials' %}?rating=4" class="filter-pill {% if selected_rating == '4' %}active{% endif %}">
+                ★ 4 Star Reviews
+            </a>
+        </div>
+
+        <!-- Testimonials Grid -->
+        <div class="row g-4">
+            {% for t in testimonials %}
+            <div class="col-lg-4 col-md-6">
+                <div class="testimonial-card">
+                    <div>
+                        <div class="testimonial-stars">
+                            {% for i in "12345" %}
+                            {% if forloop.counter <= t.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                            <span class="ms-1 small text-muted">({{ t.rating }}.0/5)</span>
+                        </div>
+                        <p class="testimonial-quote">"{{ t.content }}"</p>
+                    </div>
+
+                    <div class="testimonial-patient border-top pt-3">
+                        <img src="{{ t.photo|fallback_img:'patient' }}" alt="{{ t.name }}" class="patient-avatar">
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-0 text-dark">{{ t.name }}</h6>
+                            <small class="text-muted d-block">
+                                {{ t.designation|default:"Patient" }}{% if t.location %} · {{ t.location }}{% endif %}
+                            </small>
+                            {% if t.treatment %}
+                            <small class="text-primary fw-medium d-block mt-1">
+                                <i class="bi bi-tag-fill me-1"></i> {{ t.treatment.name }}
+                            </small>
+                            {% endif %}
+                            {% if t.doctor %}
+                            <small class="text-secondary d-block">
+                                Treated by Dr. {{ t.doctor.name }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No reviews currently found for this selection.</p>
+                <a href="{% url 'core:testimonials' %}" class="btn btn-outline-primary">View All Reviews</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Review CTA -->
+<section class="section-padding bg-white border-top border-light text-center">
+    <div class="container">
+        <h3 class="section-title">Ready To Write Your Own Success Story?</h3>
+        <p class="section-subtitle">Begin your skin or hair journey with an in-depth clinical consultation.</p>
+        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-calendar2-check"></i> Book Your Appointment
+        </a>
+    </div>
+</section>
+{% endblock %}

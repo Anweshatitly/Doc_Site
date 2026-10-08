@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}{% if page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}{% else %}Contact & Directions | {{ CLINIC_NAME }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Get In Touch</span>
+        <h1>Contact Our Clinic</h1>
+        <p class="section-subtitle mb-0">Reach our concierge team for appointments, general inquiries, or driving directions.</p>
+    </div>
+</div>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left Contact Info -->
+            <div class="col-lg-5">
+                <div class="contact-info-card">
+                    <span class="section-tag mb-3">Clinical Concierge</span>
+                    <h3 class="fw-bold mb-4">We Are Here To Assist You</h3>
+
+                    <!-- Address -->
+                    {% if site_config.address %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Clinic Address</h6>
+                            <p class="text-muted small mb-0">
+                                {{ site_config.address }}<br>
+                                {{ site_config.city }}, {{ site_config.state }} - {{ site_config.pincode }}
+                            </p>
+                            {% if site_config.google_maps_link %}
+                            <a href="{{ site_config.google_maps_link }}" target="_blank" class="small fw-semibold text-primary mt-1 d-inline-block">
+                                Get Directions <i class="bi bi-box-arrow-up-right ms-1"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Phone Numbers -->
+                    {% if site_config.phone_primary %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Phone Enquiries</h6>
+                            <p class="text-muted small mb-0">
+                                <a href="tel:{{ site_config.phone_primary }}" class="text-dark fw-medium">{{ site_config.phone_primary }}</a>
+                                {% if site_config.phone_secondary %}
+                                <br><a href="tel:{{ site_config.phone_secondary }}" class="text-muted">{{ site_config.phone_secondary }}</a>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Email Addresses -->
+                    {% if site_config.email_primary %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Email Support</h6>
+                            <p class="text-muted small mb-0">
+                                <a href="mailto:{{ site_config.email_primary }}" class="text-dark">{{ site_config.email_primary }}</a>
+                                {% if site_config.email_secondary %}
+                                <br><a href="mailto:{{ site_config.email_secondary }}" class="text-muted">{{ site_config.email_secondary }}</a>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- WhatsApp -->
+                    {% if site_config.whatsapp_number %}
+                    <div class="contact-item">
+                        <div class="contact-icon" style="background: #E8F8EE; color: #25D366;">
+                            <i class="bi bi-whatsapp"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">WhatsApp Fast Desk</h6>
+                            <p class="text-muted small mb-0">
+                                <a href="https://wa.me/{{ site_config.whatsapp_number }}" target="_blank" class="text-success fw-semibold">
+                                    +{{ site_config.whatsapp_number }} (Chat Online)
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Working Hours -->
+                    {% if site_config.working_hours_weekday %}
+                    <div class="border-top pt-4 mt-4">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-clock me-1 text-primary"></i> Consultation Hours</h6>
+                        <div class="small text-muted mb-1">
+                            <strong>Weekdays:</strong> {{ site_config.working_hours_weekday }}
+                        </div>
+                        {% if site_config.working_hours_weekend %}
+                        <div class="small text-muted">
+                            <strong>Weekends:</strong> {{ site_config.working_hours_weekend }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Contact Form -->
+            <div class="col-lg-7">
+                <div class="clinic-card p-4 p-lg-5">
+                    <span class="section-tag mb-2">Send A Message</span>
+                    <h3 class="fw-bold mb-3">Online Inquiry Form</h3>
+                    <p class="text-muted small mb-4">Please fill out the form below and our patient coordinator will respond within 24 business hours.</p>
+
+                    <form method="post" action="{% url 'core:contact' %}">
+                        {% csrf_token %}
+                        <!-- Honeypot anti-spam trap (hidden from users, traps automated bots) -->
+                        <div style="display:none !important;" aria-hidden="true">
+                            <input type="text" name="website_url" tabindex="-1" autocomplete="off">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required placeholder="Your full name" value="{{ form.name.value|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="{{ form.email.value|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+91 98765 43210" value="{{ form.phone.value|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Treatment inquiry, pricing, etc." value="{{ form.subject.value|default:'' }}">
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Describe your skin or hair concern or question...">{{ form.message.value|default:'' }}</textarea>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-send"></i> Submit Inquiry
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Google Map Section -->
+        {% if site_config.google_maps_embed %}
+        <div class="mt-5 pt-3">
+            <h4 class="fw-bold mb-3 text-center">Clinic Location & Directions</h4>
+            <div class="clinic-card overflow-hidden shadow-sm" style="height: 380px;">
+                <div class="ratio ratio-21x9 h-100">
+                    {{ site_config.google_maps_embed|safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load clinic_extras %}
+
+{% block title %}
+{% if selected_category %}{{ selected_category.name }} Articles | {{ CLINIC_NAME }}
+{% elif selected_tag %}#{{ selected_tag.name }} Articles | {{ CLINIC_NAME }}
+{% elif query %}Search Results for "{{ query }}" | {{ CLINIC_NAME }}
+{% elif page_seo and page_seo.meta_title %}{{ page_seo.meta_title }}
+{% else %}Clinical Journal & Skincare Advice | {{ CLINIC_NAME }}
+{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+{% if selected_category %}{{ selected_category.description|default:selected_category.name }} — Evidence-based dermatology and hair care articles from {{ CLINIC_NAME }}.
+{% elif page_seo and page_seo.meta_description %}{{ page_seo.meta_description }}
+{% else %}Read evidence-based skincare guides, hair health advice, and clinical dermatology insights written by board-certified specialists at {{ CLINIC_NAME }}.
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Page Banner -->
+<div class="page-banner">
+    <div class="container">
+        <span class="section-tag">Clinical Journal</span>
+        <h1>
+            {% if selected_category %}{{ selected_category.name }}
+            {% elif selected_tag %}Articles Tagged: #{{ selected_tag.name }}
+            {% elif query %}Search Results for "{{ query }}"
+            {% else %}Skincare, Hair Health & Aesthetic Advice
+            {% endif %}
+        </h1>
+        <p class="section-subtitle mb-0">
+            {% if selected_category and selected_category.description %}{{ selected_category.description }}
+            {% else %}Evidence-based advice, routine guides, and dermatological insights curated by our medical specialists.
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<section class="section-padding bg-light">
+    <div class="container">
+        <!-- Search and Filter Bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-7">
+                <form method="get" action="{% if selected_category %}{% url 'blog:category_detail' selected_category.slug %}{% else %}{% url 'blog:post_list' %}{% endif %}" class="d-flex gap-2">
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" 
+                               name="q" 
+                               value="{{ query }}" 
+                               class="form-control border-start-0" 
+                               placeholder="Search articles (e.g. acne, sunscreen, hair fall, anti-aging)...">
+                        <button type="submit" class="btn btn-primary px-4 fw-medium">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Category Nav Pills -->
+        {% if categories %}
+        <div class="filter-pills-nav mb-5">
+            <a href="{% url 'blog:post_list' %}" class="filter-pill {% if not selected_category and not selected_tag and not query %}active{% endif %}">
+                All Articles ({{ total_count }})
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'blog:category_detail' cat.slug %}" class="filter-pill {% if selected_category.slug == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Featured Spotlight Post (Page 1 Only, when no search/category filter active) -->
+        {% if featured_post and not query and not selected_category and not selected_tag %}
+        <div class="clinic-card mb-5 p-0 overflow-hidden shadow-sm border-0 bg-white">
+            <div class="row g-0 align-items-center">
+                <div class="col-lg-6">
+                    <div style="height: 380px; overflow: hidden;">
+                        <a href="{% url 'blog:post_detail' featured_post.slug %}">
+                            <img src="{{ featured_post.featured_image|fallback_img:'blog' }}" 
+                                 alt="{{ featured_post.title }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                                 onmouseover="this.style.transform='scale(1.03)'"
+                                 onmouseout="this.style.transform='scale(1)'">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 p-4 p-lg-5">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark">⭐ Spotlight Article</span>
+                        {% if featured_post.category %}
+                        <a href="{% url 'blog:category_detail' featured_post.category.slug %}" class="badge bg-light text-primary text-decoration-none">
+                            {{ featured_post.category.name }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    <h2 class="fw-bold mb-3 display-6" style="font-size: 1.75rem;">
+                        <a href="{% url 'blog:post_detail' featured_post.slug %}" class="text-dark text-decoration-none">
+                            {{ featured_post.title }}
+                        </a>
+                    </h2>
+                    <p class="text-muted mb-4 fs-6">{{ featured_post.short_description }}</p>
+                    <div class="d-flex align-items-center gap-3 text-muted small mb-4">
+                        <span><i class="bi bi-person me-1"></i>{{ featured_post.author.get_full_name|default:featured_post.author.username }}</span>
+                        <span>&bull;</span>
+                        <span><i class="bi bi-calendar3 me-1"></i>{{ featured_post.published_at|date:"M d, Y" }}</span>
+                        <span>&bull;</span>
+                        <span><i class="bi bi-clock me-1"></i>{{ featured_post.reading_time }} min read</span>
+                    </div>
+                    <a href="{% url 'blog:post_detail' featured_post.slug %}" class="btn btn-primary px-4 py-2">
+                        Read Full Article <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Articles Grid -->
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-lg-4 col-md-6 d-flex">
+                <div class="clinic-card w-100 d-flex flex-column bg-white shadow-sm border-0">
+                    <div class="card-img-wrapper position-relative" style="height: 220px; overflow: hidden;">
+                        <a href="{% url 'blog:post_detail' post.slug %}">
+                            <img src="{{ post.featured_image|fallback_img:'blog' }}" 
+                                 alt="{{ post.title }}"
+                                 style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                                 onmouseover="this.style.transform='scale(1.05)'"
+                                 onmouseout="this.style.transform='scale(1)'">
+                        </a>
+                        {% if post.category %}
+                        <a href="{% url 'blog:category_detail' post.category.slug %}" class="card-badge text-decoration-none">
+                            {{ post.category.name }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body-custom p-4 d-flex flex-column flex-grow-1">
+                        <div class="card-meta d-flex align-items-center gap-2 text-muted small mb-2">
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ post.published_at|date:"M d, Y" }}</span>
+                            <span>&bull;</span>
+                            <span><i class="bi bi-clock me-1"></i>{{ post.reading_time }} min read</span>
+                        </div>
+                        <h5 class="fw-bold mb-2">
+                            <a href="{% url 'blog:post_detail' post.slug %}" class="text-dark text-decoration-none hover-primary">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="text-muted small mb-3 flex-grow-1" style="line-height: 1.6;">
+                            {{ post.short_description|truncatewords:22 }}
+                        </p>
+                        
+                        <!-- Author & Tags -->
+                        <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-auto">
+                            <small class="text-muted">
+                                <i class="bi bi-person me-1"></i>{{ post.author.get_full_name|default:post.author.username }}
+                            </small>
+                            <a href="{% url 'blog:post_detail' post.slug %}" class="fw-semibold small text-primary text-decoration-none">
+                                Read Article <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="p-5 bg-white rounded-3 shadow-sm mx-auto" style="max-width: 540px;">
+                    <i class="bi bi-journal-x fs-1 text-muted mb-3 d-block"></i>
+                    <h5 class="fw-bold">No Articles Found</h5>
+                    <p class="text-muted small mb-4">We couldn't find any articles matching your search or category selection.</p>
+                    <a href="{% url 'blog:post_list' %}" class="btn btn-outline-primary px-4">View All Articles</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Blog pagination" class="mt-5 pt-3">
+            <ul class="pagination justify-content-center flex-wrap gap-1">
+                <!-- Previous Button -->
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link px-3" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}{% if selected_tag %}&tag={{ selected_tag.slug }}{% endif %}">
+                        <i class="bi bi-chevron-left me-1"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link px-3"><i class="bi bi-chevron-left me-1"></i> Previous</span>
+                </li>
+                {% endif %}
+
+                <!-- Numbered Page Links -->
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link px-3">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link px-3" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}{% if selected_tag %}&tag={{ selected_tag.slug }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Next Button -->
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link px-3" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}{% if selected_tag %}&tag={{ selected_tag.slug }}{% endif %}">
+                        Next <i class="bi bi-chevron-right ms-1"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link px-3">Next <i class="bi bi-chevron-right ms-1"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
